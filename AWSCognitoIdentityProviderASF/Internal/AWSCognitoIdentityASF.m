@@ -52,7 +52,11 @@ static NSString *const AWSCognitoIdentityASFVersion= @"IOS20171114";
     NSString *bundleIdentifier = [bundle bundleIdentifier];
     NSString *buildVersion = [bundle objectForInfoDictionaryKey:(NSString*)kCFBundleVersionKey];
     NSString *bundleVersion = [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+#if !TARGET_OS_VISION
     CGRect bounds = [[UIScreen mainScreen] nativeBounds];
+#else
+    CGRect bounds = CGRectMake(0, 0, 1920, 1080); // bogus
+#endif
     CGFloat screenWidth = bounds.size.width;
     CGFloat screenHeight = bounds.size.height;
 

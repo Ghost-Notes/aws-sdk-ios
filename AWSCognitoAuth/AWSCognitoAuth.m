@@ -22,7 +22,11 @@
 
 NSString *const AWSCognitoAuthErrorDomain = @"com.amazon.cognito.AWSCognitoAuthErrorDomain";
 
+#if !TARGET_OS_VISION
 @interface AWSCognitoAuth()<SFSafariViewControllerDelegate, NSURLConnectionDelegate, UIAdaptivePresentationControllerDelegate>
+#else
+@interface AWSCognitoAuth()<NSURLConnectionDelegate, UIAdaptivePresentationControllerDelegate>
+#endif
 
 @property (atomic, readwrite) AWSCognitoAuthGetSessionBlock getSessionBlock;
 @property (atomic, readwrite) AWSCognitoAuthSignOutBlock signOutBlock;
@@ -52,10 +56,12 @@ API_AVAILABLE(ios(11.0))
 @interface AWSCognitoAuth()
 
 // SFAuthenticationSession was deprecated in iOS 12, but keeping it for flows without a presentationAnchor
+#if !TARGET_OS_VISION
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 @property (nonatomic, strong) SFAuthenticationSession *sfAuthSession;
 #pragma clang diagnostic pop
+#endif
 
 @end
 
@@ -362,6 +368,7 @@ withPresentingViewController:(UIViewController *)presentingViewController {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)launchSFWebAuthenticationSession:(NSURL *)hostedUIURL API_AVAILABLE(ios(11.0)) {
+#if !TARGET_OS_VISION
     self.sfAuthenticationSessionAvailable = YES;
     NSString *callbackURLScheme = [[self urlEncode:self.authConfiguration.signInRedirectUri] copy];
     __weak AWSCognitoAuth *weakSelf = self;
@@ -373,6 +380,9 @@ withPresentingViewController:(UIViewController *)presentingViewController {
         [strongSelf handleSignInCallbackWithURL:url error:error];
     }];
     [self.sfAuthSession start];
+#else
+    self.sfAuthenticationSessionAvailable = NO;
+#endif
 }
 #pragma clang diagnostic pop
 
@@ -414,7 +424,9 @@ withPresentingViewController:(UIViewController *)presentingViewController {
     SFSafariViewControllerConfiguration *configuration = [[SFSafariViewControllerConfiguration alloc] init];
     configuration.entersReaderIfAvailable = NO;
     self.svc = [[SFSafariViewController alloc] initWithURL:url configuration:configuration];
+#if !TARGET_OS_VISION
     self.svc.delegate = self;
+#endif
     self.svc.modalPresentationStyle = UIModalPresentationPopover;
     self.isProcessingSignIn = YES;
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -665,6 +677,7 @@ withPresentingViewController:(UIViewController *)presentingViewController {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)launchSFAuthenticationSessionForSignOut:(NSURL *) url API_AVAILABLE(ios(11.0)) {
+#if !TARGET_OS_VISION
     self.sfAuthenticationSessionAvailable = YES;
     NSString *callbackURLScheme = [[self urlEncode:self.authConfiguration.signOutRedirectUri] copy];
     __weak AWSCognitoAuth *weakSelf = self;
@@ -683,6 +696,9 @@ withPresentingViewController:(UIViewController *)presentingViewController {
         }
     }];
     [self.sfAuthSession start];
+#else
+    self.sfAuthenticationSessionAvailable = NO;
+#endif
 }
 #pragma clang diagnostic pop
 
@@ -691,7 +707,9 @@ withPresentingViewController:(UIViewController *)presentingViewController {
     SFSafariViewControllerConfiguration *configuration = [[SFSafariViewControllerConfiguration alloc] init];
     configuration.entersReaderIfAvailable = NO;
     self.svc = [[SFSafariViewController alloc] initWithURL:url configuration:configuration];
+#if !TARGET_OS_VISION
     self.svc.delegate = self;
+#endif
     self.svc.modalPresentationStyle = UIModalPresentationPopover;
     self.isProcessingSignOut = YES;
     dispatch_async(dispatch_get_main_queue(), ^{
